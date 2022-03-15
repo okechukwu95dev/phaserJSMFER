@@ -1,9 +1,16 @@
 import Phaser from 'phaser';
 import shipImg from './assets/ship.png';
 import playerSprite from './assets/player.png';
-import {PLAYER_SPRITE_HEIGHT, PLAYER_SPRITE_WIDTH, PLAYER_START_X, PLAYER_START_Y} from './constants'
+import mummySprite from './assets/mummyPlayer.png'
+import { movePlayers } from './movement';
+import {PLAYER_HEIGHT, PLAYER_SPEED, PLAYER_SPRITE_HEIGHT, PLAYER_SPRITE_WIDTH, PLAYER_START_X, PLAYER_START_Y, PLAYER_WIDTH} from './constants'
+import { animateMovement } from './animation';
 
 const player = {};
+const mummy = {}
+
+
+let pressedKeys = [];
 class MferClubGame extends Phaser.Scene
 {
     constructor ()
@@ -17,34 +24,51 @@ class MferClubGame extends Phaser.Scene
         this.load.spritesheet('player', playerSprite,  {
             frameWidth: PLAYER_SPRITE_WIDTH,
             frameHeight: PLAYER_SPRITE_HEIGHT 
-
         });
+
+
+ 
 
     }
       
     create ()
     {
-        // const player = this.add.image(400, 150, 'logo');
         
+        //MFER LOADING ASSETS AND SETTING PROPS
         const ship = this.add.image(0, 0, 'ship');
         player.sprite = this.add.sprite(PLAYER_START_X, PLAYER_START_Y, 'player');
+        player.sprite.displayHeight = PLAYER_HEIGHT;
+        player.sprite.displayWidth = PLAYER_WIDTH;
 
 
-      
-        // this.tweens.add({
-        //     targets: logo,
-        //     y: 450,
-        //     duration: 2000,
-        //     ease: "Power2",
-        //     yoyo: true,
-        //     loop: -1
-        // });
+        //MFER KEYBOARD INPUT 
+        this.input.keyboard.on('keydown',(e) => {
+            if (!pressedKeys.includes(e.code)) {
+                pressedKeys.push(e.code);
+              }
+        });
+        this.input.keyboard.on('keyup',(e) => {
+            pressedKeys = pressedKeys.filter((key)=> key !== e.code)
+        });
+
+
+        //MFER ANIMATIONS
+        player.runAnimation = this.anims.create({
+            key:'running',
+            frames: this.anims.generateFrameNumbers('player'),
+            frameRate: 24,
+            repeat: -1,
+        })
+
     }
 
     update(){
-        console.log(this.scene);
-        // this.scene.scene.cameras.main.centreOn(player.sprite.x,player.sprite.y);
+        // console.log(this.scene);
+
         this.scene.scene.cameras.main.centerOn(player.sprite.x,player.sprite.y);
+        movePlayers(pressedKeys,player.sprite );
+        animateMovement(pressedKeys,player.sprite )
+
 
     }
 }
@@ -52,7 +76,7 @@ class MferClubGame extends Phaser.Scene
 const config = {
     type: Phaser.AUTO,
     parent: 'phaser-example',
-    width: 2000,
+    width: 800,
     height: 700,
     scene: MferClubGame
 };
